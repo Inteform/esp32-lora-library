@@ -69,18 +69,6 @@ static int __implicit;
 static long __frequency;
 
 /**
- * Returns non-zero value if the hardware had been initialized
- */
-int
-lora_initialized(void)
-{
-//   if(__spi <= 0) return 0; FIXME: check for previous initialization
-//   if(__cs <= 0) return 0;
-//   if(__rst <= 0) return 0;
-   return 1;
-}
-
-/**
  * Write a value to a register.
  * @param reg Register index.
  * @param val Value to write.
