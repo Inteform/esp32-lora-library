@@ -1,4 +1,4 @@
-# PyLora
+# esp32-lora-library
 ## What is it
 **esp32-lora-library** is a C component to be integrated into ESP32-IDF for sending and receiving data through a LoRa transceiver based on Semtech's SX127_ ICs.
 
