@@ -349,6 +349,7 @@ lora_init(void)
     * Perform hardware reset.
     */
    lora_reset();
+   vTaskDelay(100);
 
    /*
     * Check version.
