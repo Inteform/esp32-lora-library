@@ -63,6 +63,8 @@
 #define PA_OUTPUT_RFO_PIN              0
 #define PA_OUTPUT_PA_BOOST_PIN         1
 
+#define TIMEOUT_RESET                  100
+
 static spi_device_handle_t __spi;
 
 static int __implicit;
@@ -349,13 +351,18 @@ lora_init(void)
     * Perform hardware reset.
     */
    lora_reset();
-   vTaskDelay(100);
 
    /*
     * Check version.
     */
-   uint8_t version = lora_read_reg(REG_VERSION);
-   assert(version == 0x12);
+   uint8_t version;
+   uint8_t i = 0;
+   while(i++ < TIMEOUT_RESET) {
+      version = lora_read_reg(REG_VERSION);
+      if(version == 0x12) break;
+      vTaskDelay(2);
+   }
+   assert(i < TIMEOUT_RESET);
 
    /*
     * Default configuration.
