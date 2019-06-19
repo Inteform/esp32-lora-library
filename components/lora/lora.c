@@ -362,7 +362,7 @@ lora_init(void)
       if(version == 0x12) break;
       vTaskDelay(2);
    }
-   assert(i < TIMEOUT_RESET);
+   assert(i <= TIMEOUT_RESET + 1); // at the end of the loop above, the max value i can reach is TIMEOUT_RESET + 1
 
    /*
     * Default configuration.
