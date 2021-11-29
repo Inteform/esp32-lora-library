@@ -1,22 +1,21 @@
 # esp32-lora-library
-## What is it
-**esp32-lora-library** is a C component to be integrated into ESP32-IDF for sending and receiving data through a LoRa transceiver based on Semtech's SX127_ ICs.
-
-The library itself is based on sandeepmistry's **arduino-LoRa** (https://github.com/sandeepmistry/arduino-LoRa) library for Arduino.
+## Which is
+** esp32-lora-library ** is a C component to be integrated with ESP32-IDF to send and receive data through a LoRa transceiver based on Semtech's SX127_ ICs.
+The library is a fork of the **esp32-lora-library ** (https://github.com/Inteform/esp32-lora-library) library of Inteform for ESP32.
 
 ## How to install
-Simply clone the repository and copy the ```components/lora``` directory into your ESP-IDF project directory or into the ```components/``` path of your $IDF_PATH (it will be public to all your projects).
-You can then simply ```#include "lora.h"``` and use its functions.
-Using ```make menuconfig``` there will be LoRa Options to configure (like pin numbers)
+Simply clone the repository and copy the `` `components / lora``` directory into your ESP-IDF project directory or into the ` `` components/ `` `path of your $IDF_PATH (it will be public to all your projects) .
+You can then just `` `#include" lora.h "` `` and use its functions.
+Using `` `make menuconfig``` there will be LoRa options to configure (like pin numbers)
 
-```bash
+`` `bash
 git clone https://github.com/JN513/esp32-lora-library
-cp -r esp32-lora-library/components /path/to/my/esp32/project
+cp -r esp32-lora-library/components/ path/to/my/esp32/project
 cd /path/to/my/esp32/project
 make menuconfig
-make
+I do
 #etc
-```
+`` `
 
 ## Basic usage
 A simple **sender** program...
@@ -80,6 +79,8 @@ void app_main()
     xTaskCreate(&task_rx, "task_rx", 2048, NULL, 5, NULL);
 }
 ```
+
+More examples in examples:
 
 ## Connection with the RF module
 By default, the pins used to control the RF transceiver are--
