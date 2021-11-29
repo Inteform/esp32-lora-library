@@ -10,7 +10,7 @@ You can then simply ```#include "lora.h"``` and use its functions.
 Using ```make menuconfig``` there will be LoRa Options to configure (like pin numbers)
 
 ```bash
-git clone https://github.com/Inteform/esp32-lora-library
+git clone https://github.com/JN513/esp32-lora-library
 cp -r esp32-lora-library/components /path/to/my/esp32/project
 cd /path/to/my/esp32/project
 make menuconfig
@@ -51,29 +51,33 @@ Meanwhile in the **receiver** program...
 #include "freertos/task.h"
 #include "lora.h"
 
-uint8_t but[32];
+uint8_t buf[255];
 
 void task_rx(void *p)
 {
-   int x;
-   for(;;) {
-      lora_receive();    // put into receive mode
-      while(lora_received()) {
-         x = lora_receive_packet(buf, sizeof(buf));
-         buf[x] = 0;
-         printf("Received: %s\n", buf);
-         lora_receive();
-      }
-      vTaskDelay(1);
-   }
+    int x;
+    for(;;) {
+        lora_receive();    // put into receive mode
+        while(lora_received()) {
+            x = lora_receive_packet(buf, sizeof(buf));
+            buf[x] = 0;
+            int rssi = lora_packet_rssi();
+            printf("Received: %s, RSSI: %d\n", buf, rssi);
+            lora_receive();
+        }
+        vTaskDelay(1);
+    }
 }
 
 void app_main()
 {
-   lora_init();
-   lora_set_frequency(915e6);
-   lora_enable_crc();
-   xTaskCreate(&task_rx, "task_rx", 2048, NULL, 5, NULL);
+    lora_init();
+    lora_set_frequency(915e6);
+    lora_enable_crc();
+
+    printf("Lora Initialized: %d\n", lora_initialized());
+
+    xTaskCreate(&task_rx, "task_rx", 2048, NULL, 5, NULL);
 }
 ```
 
