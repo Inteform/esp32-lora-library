@@ -499,3 +499,32 @@ lora_dump_registers(void)
    printf("\n");
 }
 
+
+int lora_initialized(void)
+{
+   /*
+   * Check version, see datasheet
+   * https://cdn-shop.adafruit.com/product-files/3179/sx1276_77_78_79.pdf, page 92, 105
+   */
+   uint8_t version;
+   uint8_t i = 0;
+   while (i < TIMEOUT_RESET)
+   {
+      version = lora_read_reg(REG_VERSION);
+      if (version == 0x12)
+         break;
+      vTaskDelay(2);
+      i++;
+   }
+   if (i >= TIMEOUT_RESET)
+   {
+      return 0;
+   }
+
+   /*
+   * Switch to idle mode.
+   */
+   lora_idle();
+
+   return 1;
+}
