@@ -35,4 +35,11 @@ config SCK_GPIO
     help
 	Pin Number to be used as the SCK SPI signal.
 
+config DIO0_GPIO
+    int "DIO0 GPIO"
+    range 0 35
+    default 16
+    help
+    Pin Number to be used as the DIO0 signal.
+
 endmenu

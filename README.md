@@ -4,7 +4,7 @@
 The library is a fork of the **esp32-lora-library ** (https://github.com/Inteform/esp32-lora-library) library of Inteform for ESP32.
 
 ## How to install
-Simply clone the repository and copy the `` `components / lora``` directory into your ESP-IDF project directory or into the ` `` components/ `` `path of your $IDF_PATH (it will be public to all your projects) .
+Simply clone the repository and copy the `` `components/lora``` directory into your ESP-IDF project directory or into the ` `` components/ `` `path of your $IDF_PATH (it will be public to all your projects) .
 You can then just `` `#include" lora.h "` `` and use its functions.
 Using `` `make menuconfig``` there will be LoRa options to configure (like pin numbers)
 
