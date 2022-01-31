@@ -1,11 +1,19 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #include "esp_system.h"
 #include "driver/spi_master.h"
 #include "soc/gpio_struct.h"
 #include "driver/gpio.h"
 #include <string.h>
+#include "sdkconfig.h"
+
+#if CONFIG_IDF_TARGET_ESP32S2 // Se o target for ESP32S2
+
+#define VSPI_HOST HSPI_HOST
+
+#endif
 
 /*
  * Register definitions
@@ -70,8 +78,6 @@ static spi_device_handle_t __spi;
 static int __implicit;
 static long __frequency;
 
-void (*_onReceive)(int);
-void (*_onTxDone)();
 
 /**
  * Write a value to a register.
@@ -337,6 +343,7 @@ lora_init(void)
    };
            
    ret = spi_bus_initialize(VSPI_HOST, &bus, 0);
+   //ret = spi_bus_initialize(SPI_HOST, &bus, 0);
    assert(ret == ESP_OK);
 
    spi_device_interface_config_t dev = {
@@ -348,6 +355,7 @@ lora_init(void)
       .pre_cb = NULL
    };
    ret = spi_bus_add_device(VSPI_HOST, &dev, &__spi);
+   //ret = spi_bus_add_device(SPI_HOST, &dev, &__spi);
    assert(ret == ESP_OK);
 
    /*
@@ -378,6 +386,7 @@ lora_init(void)
    lora_set_tx_power(17);
 
    lora_idle();
+
    return 1;
 }
 
@@ -532,98 +541,3 @@ int lora_initialized(void)
    return 1;
 }
 
-void handle_dio0_rise(){
-   int irqFlags = lora_read_reg(REG_IRQ_FLAGS);
-
-   lora_write_reg(REG_IRQ_FLAGS, irqFlags);
-
-   if((irqFlags & IRQ_PAYLOAD_CRC_ERROR_MASK) == 0){
-      if(lora_received()){
-         int len;
-
-         if(__implicit){
-            len = lora_read_reg(REG_PAYLOAD_LENGTH);
-         }
-         else{
-            len = lora_read_reg(REG_RX_NB_BYTES);
-         }
-
-         lora_write_reg(REG_FIFO_ADDR_PTR, lora_read_reg(REG_FIFO_RX_CURRENT_ADDR));
-
-         if(_onReceive != NULL){
-            _onReceive(len);
-         }
-      } else if((irqFlags & IRQ_TX_DONE_MASK) != 0){
-         if (_onTxDone) {
-            _onTxDone();
-         }
-      }
-   }
-}
-
-void IRAM_ATTR dio0rise(void *arg)
-{
-   handle_dio0_rise();
-}
-
-void onReceive(void(*callback)(int))
-{
-   _onReceive = callback;
-
-   if(_onReceive){
-      // rising dio 0 pin
-      gpio_config_t io_conf = {};
-      //disable pull-down mode
-      io_conf.pull_down_en = 0;
-      //interrupt of rising edge
-      io_conf.intr_type = GPIO_INTR_POSEDGE;
-      //bit mask of the pins, use DIO0 here
-      io_conf.pin_bit_mask = (1ULL << CONFIG_DIO0_GPIO);
-      //set as input mode
-      io_conf.mode = GPIO_MODE_INPUT;
-      //enable pull-up mode
-      io_conf.pull_up_en = 1;
-
-      gpio_config(&io_conf);
-
-      gpio_set_intr_type(CONFIG_DIO0_GPIO, GPIO_INTR_ANYEDGE);
-
-      gpio_install_isr_service(0);
-
-      gpio_isr_handler_add(CONFIG_DIO0_GPIO, dio0rise, (void *) CONFIG_DIO0_GPIO);
-
-   } else {
-      gpio_isr_handler_remove(CONFIG_DIO0_GPIO);
-   }
-}
-
-void onTxDone(void(*callback)(void))
-{
-   _onTxDone = callback;
-
-   if(_onTxDone){
-      // rising dio 0 pin
-      gpio_config_t io_conf = {};
-      //disable pull-down mode
-      io_conf.pull_down_en = 0;
-      //interrupt of rising edge
-      io_conf.intr_type = GPIO_INTR_POSEDGE;
-      //bit mask of the pins, use DIO0 here
-      io_conf.pin_bit_mask = (1ULL << CONFIG_DIO0_GPIO);
-      //set as input mode
-      io_conf.mode = GPIO_MODE_INPUT;
-      //enable pull-up mode
-      io_conf.pull_up_en = 1;
-
-      gpio_config(&io_conf);
-
-      gpio_set_intr_type(CONFIG_DIO0_GPIO, GPIO_INTR_ANYEDGE);
-
-      gpio_install_isr_service(0);
-
-      gpio_isr_handler_add(CONFIG_DIO0_GPIO, dio0rise, (void *) CONFIG_DIO0_GPIO);
-
-   } else {
-      gpio_isr_handler_remove(CONFIG_DIO0_GPIO);
-   }
-}

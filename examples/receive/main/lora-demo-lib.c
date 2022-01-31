@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
+#include "driver/gpio.h"
 #include "lora.h"
 
 uint8_t buf[255];
@@ -21,6 +23,7 @@ void task_rx(void *p)
     }
 }
 
+
 void app_main()
 {
     lora_init();
@@ -29,5 +32,6 @@ void app_main()
 
     printf("Lora Initialized: %d\n", lora_initialized());
 
-    xTaskCreate(&task_rx, "task_rx", 2048, NULL, 5, NULL);
+    xTaskCreate(task_rx, "task_rx", 2048, NULL, 5, NULL);
+
 }

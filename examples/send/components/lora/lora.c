@@ -1,11 +1,19 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #include "esp_system.h"
 #include "driver/spi_master.h"
 #include "soc/gpio_struct.h"
 #include "driver/gpio.h"
 #include <string.h>
+#include "sdkconfig.h"
+
+#if CONFIG_IDF_TARGET_ESP32S2 // Se o target for ESP32S2
+
+#define VSPI_HOST HSPI_HOST
+
+#endif
 
 /*
  * Register definitions
@@ -69,6 +77,7 @@ static spi_device_handle_t __spi;
 
 static int __implicit;
 static long __frequency;
+
 
 /**
  * Write a value to a register.
@@ -334,6 +343,7 @@ lora_init(void)
    };
            
    ret = spi_bus_initialize(VSPI_HOST, &bus, 0);
+   //ret = spi_bus_initialize(SPI_HOST, &bus, 0);
    assert(ret == ESP_OK);
 
    spi_device_interface_config_t dev = {
@@ -345,6 +355,7 @@ lora_init(void)
       .pre_cb = NULL
    };
    ret = spi_bus_add_device(VSPI_HOST, &dev, &__spi);
+   //ret = spi_bus_add_device(SPI_HOST, &dev, &__spi);
    assert(ret == ESP_OK);
 
    /*
@@ -375,6 +386,7 @@ lora_init(void)
    lora_set_tx_power(17);
 
    lora_idle();
+
    return 1;
 }
 
@@ -497,5 +509,35 @@ lora_dump_registers(void)
       if((i & 0x0f) == 0x0f) printf("\n");
    }
    printf("\n");
+}
+
+
+int lora_initialized(void)
+{
+   /*
+   * Check version, see datasheet
+   * https://cdn-shop.adafruit.com/product-files/3179/sx1276_77_78_79.pdf, page 92, 105
+   */
+   uint8_t version;
+   uint8_t i = 0;
+   while (i < TIMEOUT_RESET)
+   {
+      version = lora_read_reg(REG_VERSION);
+      if (version == 0x12)
+         break;
+      vTaskDelay(2);
+      i++;
+   }
+   if (i >= TIMEOUT_RESET)
+   {
+      return 0;
+   }
+
+   /*
+   * Switch to idle mode.
+   */
+   lora_idle();
+
+   return 1;
 }
 

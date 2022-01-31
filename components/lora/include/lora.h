@@ -28,7 +28,4 @@ int lora_initialized(void);
 void lora_dump_registers(void);
 int lora_initialized(void);
 
-void onReceive(void(*callback)(int));
-void onTxDone(void(*callback)());
-
 #endif

@@ -7,7 +7,11 @@ void task_tx(void *p)
 {
     for(;;) {
         vTaskDelay(pdMS_TO_TICKS(5000));
-        lora_send_packet((uint8_t*)"Hello", 5);
+
+        u_int8_t data[4] = {2, 2, 3, 0x04, 0x05};
+
+        lora_send_packet(data, 5);
+        //lora_send_packet((uint8_t*)"Hello", 5);
         printf("packet sent...\n");
     }
 }
