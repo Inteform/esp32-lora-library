@@ -375,7 +375,7 @@ lora_init(void)
    lora_set_tx_power(17);
 
    lora_idle();
-   return 1;
+   return version;
 }
 
 /**
