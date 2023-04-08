@@ -1,20 +1,22 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
-#include "esp_system.h"
 #include "driver/spi_master.h"
-#include "soc/gpio_struct.h"
 #include "driver/gpio.h"
-#include <string.h>
 #include "sdkconfig.h"
 
-#if CONFIG_IDF_TARGET_ESP32S2 // Se o target for ESP32S2
-
-#define VSPI_HOST HSPI_HOST
-
+#ifdef CONFIG_IDF_TARGET_ESP32
+#  define LORA_HOST    HSPI_HOST
+#elif defined CONFIG_IDF_TARGET_ESP32S2
+#  define LORA_HOST    SPI2_HOST
+#elif defined CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C2
+#  define LORA_HOST    SPI2_HOST
+#elif CONFIG_IDF_TARGET_ESP32S3
+#  define LORA_HOST    SPI2_HOST
 #endif
-
 /*
  * Register definitions
  */
@@ -328,9 +330,16 @@ lora_init(void)
    /*
     * Configure CPU hardware to communicate with the radio chip
     */
-   gpio_pad_select_gpio(CONFIG_RST_GPIO);
+
+   /*
+   gpio_config_t io_conf = {};
+   io_conf.mode = GPIO_MODE_OUTPUT;
+
+   gpio_config(&io_conf);
+   */
+   //gpio_pad_select_gpio(CONFIG_RST_GPIO);
    gpio_set_direction(CONFIG_RST_GPIO, GPIO_MODE_OUTPUT);
-   gpio_pad_select_gpio(CONFIG_CS_GPIO);
+   //gpio_pad_select_gpio(CONFIG_CS_GPIO);
    gpio_set_direction(CONFIG_CS_GPIO, GPIO_MODE_OUTPUT);
 
    spi_bus_config_t bus = {
@@ -342,8 +351,8 @@ lora_init(void)
       .max_transfer_sz = 0
    };
            
-   ret = spi_bus_initialize(VSPI_HOST, &bus, 0);
-   //ret = spi_bus_initialize(SPI_HOST, &bus, 0);
+   //ret = spi_bus_initialize(VSPI_HOST, &bus, 0);
+   ret = spi_bus_initialize(LORA_HOST, &bus, 0);
    assert(ret == ESP_OK);
 
    spi_device_interface_config_t dev = {
@@ -354,8 +363,8 @@ lora_init(void)
       .flags = 0,
       .pre_cb = NULL
    };
-   ret = spi_bus_add_device(VSPI_HOST, &dev, &__spi);
-   //ret = spi_bus_add_device(SPI_HOST, &dev, &__spi);
+   //ret = spi_bus_add_device(VSPI_HOST, &dev, &__spi);
+   ret = spi_bus_initialize(LORA_HOST, &bus, 0);
    assert(ret == ESP_OK);
 
    /*
